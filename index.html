@@ -1,0 +1,1415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Orange Camper — Roblox Developer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    /* ===== CSS VARIABLES ===== */
+    :root {
+      --orange: #FF6A00;
+      --orange-dark: #cc5500;
+      --orange-light: #ff8c33;
+      --orange-glow: rgba(255, 106, 0, 0.4);
+      --bg-primary: #0a0a0a;
+      --bg-secondary: #111111;
+      --bg-card: #161616;
+      --bg-card-hover: #1a1a1a;
+      --text-primary: #f0f0f0;
+      --text-secondary: #999999;
+      --text-muted: #666666;
+    }
+
+    /* ===== RESET & BASE ===== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      scrollbar-width: thin;
+      scrollbar-color: var(--orange) var(--bg-primary);
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    @media (max-width: 768px) {
+      body { cursor: auto; }
+    }
+
+    button {
+      background: none;
+      border: none;
+      font-family: inherit;
+      color: inherit;
+    }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-primary); }
+    ::-webkit-scrollbar-thumb { background: var(--orange); border-radius: 3px; }
+
+    /* ===== CUSTOM CURSOR ===== */
+    .cursor-glow {
+      pointer-events: none;
+      position: fixed;
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 106, 0, 0.07) 0%, transparent 70%);
+      transform: translate(-50%, -50%);
+      z-index: 9999;
+      transition: opacity 0.3s ease;
+    }
+
+    .cursor-dot {
+      pointer-events: none;
+      position: fixed;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--orange);
+      transform: translate(-50%, -50%);
+      z-index: 10000;
+      box-shadow: 0 0 10px var(--orange-glow), 0 0 20px rgba(255,106,0,0.2);
+      transition: width 0.2s ease, height 0.2s ease;
+    }
+
+    @media (max-width: 768px) {
+      .cursor-glow, .cursor-dot { display: none !important; }
+    }
+
+    /* ===== SCROLL PROGRESS BAR ===== */
+    .scroll-progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--orange), var(--orange-light));
+      z-index: 10001;
+      transition: width 0.05s linear;
+      box-shadow: 0 0 8px var(--orange-glow);
+    }
+
+    /* ===== NAVBAR ===== */
+    .navbar {
+      position: fixed;
+      top: 3px;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      padding: 0.75rem 2rem;
+      transition: all 0.4s ease;
+      background: transparent;
+    }
+
+    .navbar.scrolled {
+      background: rgba(10, 10, 10, 0.75);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255, 106, 0, 0.1);
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .navbar-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-link {
+      position: relative;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      padding: 0.4rem 0.75rem;
+      transition: all 0.3s ease;
+      cursor: none;
+      background: none;
+      border: none;
+      font-family: 'Inter', sans-serif;
+    }
+
+    @media (max-width: 768px) {
+      .nav-link { cursor: pointer; }
+    }
+
+    .nav-link:hover, .nav-link.active { color: var(--orange); }
+
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 2px;
+      background: var(--orange);
+      transition: width 0.3s ease;
+      border-radius: 1px;
+    }
+
+    .nav-link.active::after { width: 60%; }
+
+    .nav-brand {
+      font-weight: 800;
+      font-size: 1rem;
+      color: var(--orange) !important;
+      letter-spacing: 0;
+    }
+
+    .nav-links-desktop {
+      display: flex;
+      gap: 0.25rem;
+      align-items: center;
+    }
+
+    /* ===== HERO SECTION ===== */
+    .hero-section {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .hero-bg-gradient {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 20% 50%, rgba(255, 106, 0, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 20%, rgba(255, 106, 0, 0.05) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 80%, rgba(255, 140, 51, 0.04) 0%, transparent 50%);
+      animation: heroGradientShift 12s ease-in-out infinite alternate;
+    }
+
+    @keyframes heroGradientShift {
+      0% {
+        background:
+          radial-gradient(ellipse at 20% 50%, rgba(255, 106, 0, 0.08) 0%, transparent 50%),
+          radial-gradient(ellipse at 80% 20%, rgba(255, 106, 0, 0.05) 0%, transparent 50%),
+          radial-gradient(ellipse at 50% 80%, rgba(255, 140, 51, 0.04) 0%, transparent 50%);
+      }
+      50% {
+        background:
+          radial-gradient(ellipse at 60% 30%, rgba(255, 106, 0, 0.1) 0%, transparent 50%),
+          radial-gradient(ellipse at 30% 70%, rgba(255, 106, 0, 0.06) 0%, transparent 50%),
+          radial-gradient(ellipse at 70% 60%, rgba(255, 140, 51, 0.05) 0%, transparent 50%);
+      }
+      100% {
+        background:
+          radial-gradient(ellipse at 40% 60%, rgba(255, 106, 0, 0.09) 0%, transparent 50%),
+          radial-gradient(ellipse at 70% 40%, rgba(255, 106, 0, 0.07) 0%, transparent 50%),
+          radial-gradient(ellipse at 30% 30%, rgba(255, 140, 51, 0.06) 0%, transparent 50%);
+      }
+    }
+
+    .particle-canvas {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+    }
+
+    .hero-content {
+      text-align: center;
+      position: relative;
+      z-index: 2;
+      padding: 0 1.5rem;
+    }
+
+    .hero-title {
+      font-size: clamp(3rem, 8vw, 7rem);
+      font-weight: 900;
+      letter-spacing: -2px;
+      background: linear-gradient(135deg, var(--orange) 0%, var(--orange-light) 50%, #ffaa55 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 30px rgba(255, 106, 0, 0.3));
+      animation: titleGlow 3s ease-in-out infinite alternate;
+      line-height: 1.1;
+    }
+
+    @keyframes titleGlow {
+      0% { filter: drop-shadow(0 0 20px rgba(255, 106, 0, 0.2)); }
+      100% { filter: drop-shadow(0 0 40px rgba(255, 106, 0, 0.5)); }
+    }
+
+    .hero-subtitle {
+      font-size: clamp(1rem, 2.5vw, 1.4rem);
+      color: var(--text-secondary);
+      font-weight: 400;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-top: 1rem;
+    }
+
+    .typewriter-cursor {
+      display: inline-block;
+      width: 3px;
+      height: 1em;
+      background: var(--orange);
+      margin-left: 4px;
+      animation: blink 1s step-end infinite;
+      vertical-align: text-bottom;
+    }
+
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+
+    /* ===== BUTTONS ===== */
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.9rem 2.2rem;
+      background: linear-gradient(135deg, var(--orange), var(--orange-dark));
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.95rem;
+      letter-spacing: 0.5px;
+      border: none;
+      border-radius: 50px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      cursor: none;
+      position: relative;
+      overflow: hidden;
+      font-family: 'Inter', sans-serif;
+    }
+
+    @media (max-width: 768px) {
+      .btn-primary, .btn-play { cursor: pointer; }
+    }
+
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      border-radius: 50px;
+      background: linear-gradient(135deg, var(--orange), var(--orange-light));
+      z-index: -1;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      filter: blur(10px);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px) scale(1.05);
+      box-shadow: 0 10px 40px rgba(255, 106, 0, 0.4);
+    }
+
+    .btn-primary:hover::before { opacity: 1; }
+
+    /* ===== SECTION STYLES ===== */
+    .section {
+      padding: 6rem 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .section-title {
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, #fff 0%, #ccc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .section-subtitle {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
+
+    .orange-line {
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(90deg, var(--orange), var(--orange-light));
+      border-radius: 2px;
+      margin-bottom: 3rem;
+      box-shadow: 0 0 10px rgba(255, 106, 0, 0.3);
+    }
+
+    .orange-line-center {
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* ===== SECTION SEPARATOR ===== */
+    .section-separator {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 106, 0, 0.15), transparent);
+    }
+
+    /* ===== GRID PATTERN BG ===== */
+    .grid-bg {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255, 106, 0, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 106, 0, 0.02) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+    }
+
+    /* ===== ABOUT SECTION ===== */
+    .about-text {
+      font-size: clamp(1.1rem, 2vw, 1.35rem);
+      color: var(--text-secondary);
+      line-height: 1.8;
+      max-width: 650px;
+      font-weight: 300;
+    }
+
+    .about-text span {
+      color: var(--orange);
+      font-weight: 500;
+    }
+
+    /* ===== PROJECT CARDS ===== */
+    .project-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 2rem;
+    }
+
+    .project-card {
+      background: var(--bg-card);
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: relative;
+    }
+
+    .project-card::before {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: 16px;
+      padding: 1px;
+      background: linear-gradient(135deg, transparent, transparent);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      transition: background 0.4s ease;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .project-card:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 20px 60px rgba(255, 106, 0, 0.15);
+      border-color: rgba(255, 106, 0, 0.3);
+    }
+
+    .project-card:hover::before {
+      background: linear-gradient(135deg, var(--orange), var(--orange-light), transparent);
+    }
+
+    .project-image {
+      width: 100%;
+      height: 200px;
+      background: linear-gradient(135deg, rgba(255, 106, 0, 0.1), rgba(255, 106, 0, 0.02));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .project-image::before {
+      content: '';
+      position: absolute;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 106, 0, 0.3), transparent 70%);
+      animation: imagePulse 3s ease-in-out infinite;
+    }
+
+    @keyframes imagePulse {
+      0%, 100% { transform: scale(1); opacity: 0.5; }
+      50% { transform: scale(1.5); opacity: 0.8; }
+    }
+
+    .project-image-icon {
+      font-size: 2.5rem;
+      z-index: 1;
+    }
+
+    .project-content {
+      padding: 1.5rem;
+    }
+
+    .project-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 0.6rem;
+      color: var(--text-primary);
+    }
+
+    .project-desc {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: 1.2rem;
+    }
+
+    .btn-play {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.6rem 1.4rem;
+      background: rgba(255, 106, 0, 0.1);
+      color: var(--orange);
+      font-weight: 600;
+      font-size: 0.82rem;
+      border: 1px solid rgba(255, 106, 0, 0.3);
+      border-radius: 50px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      cursor: none;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .btn-play:hover {
+      background: rgba(255, 106, 0, 0.2);
+      box-shadow: 0 0 20px rgba(255, 106, 0, 0.2);
+      transform: translateY(-1px);
+    }
+
+    /* ===== SKILLS SECTION ===== */
+    .skills-category {
+      margin-bottom: 3.5rem;
+    }
+
+    .skills-category-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .skills-category-title .badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .badge-expert {
+      background: linear-gradient(135deg, rgba(255, 106, 0, 0.2), rgba(255, 106, 0, 0.1));
+      color: var(--orange);
+      border: 1px solid rgba(255, 106, 0, 0.3);
+      box-shadow: 0 0 15px rgba(255, 106, 0, 0.15);
+    }
+
+    .badge-advanced {
+      background: rgba(255, 106, 0, 0.08);
+      color: var(--orange-light);
+      border: 1px solid rgba(255, 106, 0, 0.15);
+    }
+
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1rem;
+    }
+
+    .skill-card {
+      background: var(--bg-card);
+      border-radius: 12px;
+      padding: 1.2rem 1.5rem;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .skill-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 106, 0, 0.3), transparent);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .skill-card:hover {
+      border-color: rgba(255, 106, 0, 0.15);
+      background: var(--bg-card-hover);
+    }
+
+    .skill-card:hover::after { opacity: 1; }
+
+    .skill-card.expert {
+      border-left: 2px solid rgba(255, 106, 0, 0.4);
+    }
+
+    .skill-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.4rem;
+    }
+
+    .skill-name {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .skill-percent {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--orange);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .skill-subtitle {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 0.8rem;
+      line-height: 1.4;
+    }
+
+    .skill-bar-bg {
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 2px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .skill-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--orange), var(--orange-light));
+      border-radius: 2px;
+      width: 0%;
+      transition: width 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      position: relative;
+      box-shadow: 0 0 8px rgba(255, 106, 0, 0.4);
+    }
+
+    .skill-bar-fill::after {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: -2px;
+      bottom: -2px;
+      width: 6px;
+      background: var(--orange-light);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--orange-glow);
+    }
+
+    /* ===== COMMISSION SECTION ===== */
+    .commission-box {
+      background: var(--bg-card);
+      border-radius: 20px;
+      padding: 3rem;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      text-align: center;
+      max-width: 700px;
+      margin: 0 auto;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .commission-box::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--orange), transparent);
+    }
+
+    .status-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.5rem 1.2rem;
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.2);
+      border-radius: 50px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #22c55e;
+      margin-bottom: 1.5rem;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #22c55e;
+      display: inline-block;
+      animation: statusPulse 2s ease-in-out infinite;
+      box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
+    }
+
+    @keyframes statusPulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.3); }
+    }
+
+    .commission-text {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      margin-bottom: 1rem;
+      line-height: 1.7;
+    }
+
+    .payment-methods {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-bottom: 2rem;
+      font-weight: 500;
+    }
+
+    .payment-methods span { color: var(--orange); }
+
+    /* ===== CONTACT SECTION ===== */
+    .contact-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1.5rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .contact-card {
+      background: var(--bg-card);
+      border-radius: 14px;
+      padding: 1.5rem;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      text-align: center;
+      width: calc(50% - 0.75rem);
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: block;
+      cursor: none;
+    }
+
+    @media (max-width: 768px) {
+      .contact-card { cursor: pointer; width: 100%; }
+    }
+
+    .contact-card:hover {
+      border-color: rgba(255, 106, 0, 0.3);
+      transform: translateY(-4px);
+      box-shadow: 0 10px 40px rgba(255, 106, 0, 0.1);
+    }
+
+    .contact-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+      font-weight: 500;
+    }
+
+    .contact-value {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--orange);
+    }
+
+    /* ===== FOOTER ===== */
+    .footer {
+      background: var(--bg-secondary);
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 3rem 2rem;
+      text-align: center;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .footer-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 500;
+      transition: color 0.3s ease;
+      cursor: none;
+      background: none;
+      border: none;
+      font-family: 'Inter', sans-serif;
+    }
+
+    @media (max-width: 768px) {
+      .footer-link { cursor: pointer; }
+    }
+
+    .footer-link:hover { color: var(--orange); }
+
+    .footer-copy {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+
+    .footer-divider {
+      width: 60px;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(255, 106, 0, 0.4), transparent);
+      margin: 1.5rem auto;
+      border-radius: 1px;
+    }
+
+    /* ===== SCROLL ANIMATIONS ===== */
+    .animate-on-scroll {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+
+    .animate-on-scroll.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .animate-on-scroll.delay-1 { transition-delay: 0.1s; }
+    .animate-on-scroll.delay-2 { transition-delay: 0.2s; }
+    .animate-on-scroll.delay-3 { transition-delay: 0.3s; }
+    .animate-on-scroll.delay-4 { transition-delay: 0.4s; }
+    .animate-on-scroll.delay-5 { transition-delay: 0.5s; }
+    .animate-on-scroll.delay-6 { transition-delay: 0.6s; }
+    .animate-on-scroll.delay-7 { transition-delay: 0.7s; }
+    .animate-on-scroll.delay-8 { transition-delay: 0.8s; }
+    .animate-on-scroll.delay-9 { transition-delay: 0.9s; }
+    .animate-on-scroll.delay-10 { transition-delay: 1.0s; }
+
+    /* ===== HERO FADE IN ===== */
+    .hero-fade-in {
+      opacity: 0;
+      transform: translateY(30px);
+      animation: heroFadeIn 1s ease forwards;
+    }
+
+    .hero-fade-in.d1 { animation-delay: 0.3s; }
+    .hero-fade-in.d2 { animation-delay: 0.6s; }
+    .hero-fade-in.d3 { animation-delay: 0.9s; }
+
+    @keyframes heroFadeIn {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ===== MOBILE MENU ===== */
+    .mobile-menu-btn {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--text-primary);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0.25rem;
+      z-index: 1001;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .mobile-menu {
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      .mobile-menu-btn { display: block; cursor: pointer; }
+      .nav-links-desktop { display: none !important; }
+
+      .mobile-menu {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(10, 10, 10, 0.95);
+        backdrop-filter: blur(20px);
+        z-index: 999;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2rem;
+      }
+
+      .mobile-menu.open {
+        display: flex;
+      }
+
+      .mobile-menu .nav-link {
+        font-size: 1.2rem;
+        cursor: pointer;
+      }
+
+      .section { padding: 4rem 1.25rem; }
+      .commission-box { padding: 2rem 1.5rem; }
+      .skills-grid { grid-template-columns: 1fr; }
+      .project-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ===== CENTER TEXT UTILITY ===== */
+    .text-center { text-align: center; }
+    .inline-block { display: inline-block; }
+    .mt-2-5 { margin-top: 2.5rem; }
+  </style>
+</head>
+<body>
+
+  <!-- Custom Cursor -->
+  <div id="cursor-glow" class="cursor-glow"></div>
+  <div id="cursor-dot" class="cursor-dot"></div>
+
+  <!-- Scroll Progress -->
+  <div id="scroll-progress" class="scroll-progress"></div>
+
+  <!-- Navbar -->
+  <nav id="navbar" class="navbar">
+    <div class="navbar-inner">
+      <button onclick="scrollToSection('hero')" class="nav-link nav-brand">🍊 OC</button>
+      <div class="nav-links-desktop">
+        <button onclick="scrollToSection('hero')" class="nav-link active" data-section="hero">Home</button>
+        <button onclick="scrollToSection('about')" class="nav-link" data-section="about">About</button>
+        <button onclick="scrollToSection('projects')" class="nav-link" data-section="projects">Projects</button>
+        <button onclick="scrollToSection('skills')" class="nav-link" data-section="skills">Skills</button>
+        <button onclick="scrollToSection('commissions')" class="nav-link" data-section="commissions">Hire Me</button>
+        <button onclick="scrollToSection('contact')" class="nav-link" data-section="contact">Contact</button>
+      </div>
+      <button id="mobile-menu-btn" class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+    </div>
+  </nav>
+
+  <!-- Mobile Menu -->
+  <div id="mobile-menu" class="mobile-menu">
+    <button onclick="scrollToSection('hero')" class="nav-link" data-section="hero">Home</button>
+    <button onclick="scrollToSection('about')" class="nav-link" data-section="about">About</button>
+    <button onclick="scrollToSection('projects')" class="nav-link" data-section="projects">Projects</button>
+    <button onclick="scrollToSection('skills')" class="nav-link" data-section="skills">Skills</button>
+    <button onclick="scrollToSection('commissions')" class="nav-link" data-section="commissions">Hire Me</button>
+    <button onclick="scrollToSection('contact')" class="nav-link" data-section="contact">Contact</button>
+  </div>
+
+  <!-- ===== HERO ===== -->
+  <section id="hero" class="hero-section">
+    <div class="hero-bg-gradient"></div>
+    <canvas id="particle-canvas" class="particle-canvas"></canvas>
+    <div id="hero-content" class="hero-content">
+      <h1 class="hero-title hero-fade-in d1">
+        <span id="typewriter-text"></span><span class="typewriter-cursor"></span>
+      </h1>
+      <p class="hero-subtitle hero-fade-in d2">Roblox Systems &amp; UI Developer</p>
+      <div class="hero-fade-in d3 mt-2-5">
+        <button onclick="scrollToSection('projects')" class="btn-primary">View My Work ↓</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== ABOUT ===== -->
+  <div class="section-separator"></div>
+  <section id="about" class="section">
+    <div class="grid-bg"></div>
+    <p class="section-subtitle animate-on-scroll">About Me</p>
+    <h2 class="section-title animate-on-scroll delay-1">Who I Am</h2>
+    <div class="orange-line animate-on-scroll delay-2"></div>
+    <p class="about-text animate-on-scroll delay-3">
+      im known as <span>orange</span>, and i got bored so i decided to learn how to script in my free time, and i think it turned out nicely.
+    </p>
+  </section>
+
+  <!-- ===== PROJECTS ===== -->
+  <div class="section-separator"></div>
+  <section id="projects" class="section">
+    <div class="grid-bg"></div>
+    <p class="section-subtitle animate-on-scroll">Portfolio</p>
+    <h2 class="section-title animate-on-scroll delay-1">Projects</h2>
+    <div class="orange-line animate-on-scroll delay-2"></div>
+    <div class="project-grid">
+      <!-- Project 1 -->
+      <div class="project-card animate-on-scroll delay-3">
+        <div class="project-image">
+          <span class="project-image-icon">📈</span>
+        </div>
+        <div class="project-content">
+          <h3 class="project-title">Meme Exchange — Realistic Stock Market Simulator</h3>
+          <p class="project-desc">A fully functional meme-themed stock market simulator with real-time UI, interactive charts, and live trading mechanics — built entirely in Roblox.</p>
+          <a href="https://www.roblox.com/games/130985677411419/Meme-Exchange-Realistic-Stock-Market-Simulator" target="_blank" rel="noopener noreferrer" class="btn-play">▶ Play on Roblox</a>
+        </div>
+      </div>
+      <!-- Project 2 -->
+      <div class="project-card animate-on-scroll delay-4">
+        <div class="project-image">
+          <span class="project-image-icon">⚙️</span>
+        </div>
+        <div class="project-content">
+          <h3 class="project-title">Realistic Engine Visualizer</h3>
+          <p class="project-desc">An interactive engine visualization experience featuring detailed real-time mechanical animations and UI-driven controls.</p>
+          <a href="https://www.roblox.com/games/110947684939482/Realistic-Engine-Visualizer" target="_blank" rel="noopener noreferrer" class="btn-play">▶ Play on Roblox</a>
+        </div>
+      </div>
+      <!-- Project 3 -->
+      <div class="project-card animate-on-scroll delay-5">
+        <div class="project-image">
+          <span class="project-image-icon">🧮</span>
+        </div>
+        <div class="project-content">
+          <h3 class="project-title">🏆 Math Duels! 📈</h3>
+          <p class="project-desc">A competitive multiplayer math game with randomly-generated questions, a global leaderboard system, and fast-paced gameplay.</p>
+          <a href="https://www.roblox.com/games/97920140598725/Math-Duels" target="_blank" rel="noopener noreferrer" class="btn-play">▶ Play on Roblox</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SKILLS ===== -->
+  <div class="section-separator"></div>
+  <section id="skills" class="section">
+    <div class="grid-bg"></div>
+    <div class="text-center">
+      <p class="section-subtitle animate-on-scroll">What I Do</p>
+      <h2 class="section-title animate-on-scroll delay-1 inline-block">Skills &amp; Expertise</h2>
+      <div class="orange-line orange-line-center animate-on-scroll delay-2"></div>
+    </div>
+
+    <!-- Expert Skills -->
+    <div class="skills-category">
+      <div class="skills-category-title animate-on-scroll">
+        <span class="badge badge-expert">⭐ Expert</span>
+      </div>
+      <div class="skills-grid">
+        <div class="skill-card expert animate-on-scroll delay-1">
+          <div class="skill-header"><span class="skill-name">Core Game Logic</span><span class="skill-percent">95%</span></div>
+          <p class="skill-subtitle">Round systems, game loops, state machines, timers</p>
+          <div class="skill-bar-bg"><div class="skill-bar-fill" data-pct="95"></div></div>
+        </div>
+        <div class="skill-card expert animate-on-scroll delay-2">
+          <div class="skill-header"><span class="skill-name">DataStore Systems</span><span class="skill-percent">95%</span></div>
+          <p class="skill-subtitle">ProfileService patterns, session locking, saving/loading</p>
+          <div class="skill-bar-bg"><div class="skill-bar-fill" data-pct="95"></div></div>
+        </div>
+        <div class="skill-card expert animate-on-scroll delay-3">
+          <div class="skill-header"><span class="skill-name">Remote Architecture</span><span class="skill-percent">95%</span></div>
+          <p class="skill-subtitle">Secure client-server communication, sanity checks</p>
+          <div class="skill-bar-bg"><div class="skill-bar-fill" data-pct="95"></div></div>
+        </div>
+        <div class="skill-card expert animate-on-scroll delay-4">
+          <div class="skill-header"><span class="skill-name">UI/UX Scripting</span><span class="skill-percent">95%</span></div>
+          <p class="skill-subtitle">Menus, HUDs, shops, inventories, tween animations</p>
+          <div class="skill-bar-bg"><div class="skill-bar-fill" data-pct="95"></div></div>
+        </div>
+        <div class="skill-card expert animate-on-scroll delay-5">
+          <div class="skill-header"><span class="skill-name">OOP &amp; Module Architecture</span><span class="skill-percent">93%</span></div>
+          <p class="skill-subtitle">Clean ModuleScripts, class patterns, service structure</p>
+          <div class="skill-bar-bg"><div class="skill-bar-fill" data-pct="93"></div></div>
+        </div>
+        <div class="skill-card expert animate-on-scroll delay-6">
+          <div class="skill-header"><span class="skill-name">Debugging &amp; Code Review</span><span class="skill-percent">95%</span></div>
+          <p class="skill-subtitle">Bug fixing, optimizing, refactoring</p>
+          <div class="skill-bar-bg"><div class="skill-bar-fill" data-pct="95"></div></div>
+        </div>
+        <div class="skill-card expert animate-on-scroll delay-7">
+          <div class="skill-header"><span class="skill-name">Combat Systems</span><span class="skill-percent">90%</span></div>
+          <p class="skill-subtitle">Hitbox detection, cooldowns, damage, knockback</p>
+          <div class="skill-bar-bg"><div class="skill-bar-fill" data-pct="90"></div></div>
+        </div>
+        <div class="skill-card expert animate-on-scroll delay-8">
+          <div class="skill-header"><span class="skill-name">Economy &amp; Currency Systems</span><span class="skill-percent">92%</span></div>
+          <p class="skill-subtitle">Shops, trading, leaderboards, in-game economies</p>
+          <div class="skill-bar-bg"><div class="skill-bar-fill" data-pct="92"></div></div>
+        </div>
+        <div class="skill-card expert animate-on-scroll delay-9">
+          <div class="skill-header"><span class="skill-name">Tool &amp; Weapon Scripting</span><span class="skill-percent">90%</span></div>
+          <p class="skill-subtitle">Swords, guns, abilities, projectiles</p>
+          <div class="skill-bar-bg"><div class="skill-bar-fill" data-pct="90"></div></div>
+        </div>
+        <div class="skill-card expert animate-on-scroll delay-10">
+          <div class="skill-header"><span class="skill-name">Admin Commands</span><span class="skill-percent">90%</span></div>
+          <p class="skill-subtitle">Custom chat commands, permission tiers</p>
+          <div class="skill-bar-bg"><div class="skill-bar-fill" data-pct="90"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Advanced Skills -->
+    <div class="skills-category">
+      <div class="skills-category-title animate-on-scroll">
+        <span class="badge badge-advanced">🔧 Advanced</span>
+      </div>
+      <div class="skills-grid">
+        <div class="skill-card animate-on-scroll delay-1">
+          <div class="skill-header"><span class="skill-name">Anti-Exploit Patterns</span><span class="skill-percent">85%</span></div>
+          <p class="skill-subtitle">Server-authoritative design, rate limiting</p>
+          <div class="skill-bar-bg"><div class="skill-bar-fill" data-pct="85"></div></div>
+        </div>
+        <div class="skill-card animate-on-scroll delay-2">
+          <div class="skill-header"><span class="skill-name">Tycoon &amp; Simulator Systems</span><span class="skill-percent">83%</span></div>
+          <p class="skill-subtitle">Droppers, upgraders, rebirth systems</p>
+          <div class="skill-bar-bg"><div class="skill-bar-fill" data-pct="83"></div></div>
+        </div>
+        <div class="skill-card animate-on-scroll delay-3">
+          <div class="skill-header"><span class="skill-name">Pet Systems</span><span class="skill-percent">82%</span></div>
+          <p class="skill-subtitle">Equipping, following, rarity tiers</p>
+          <div class="skill-bar-bg"><div class="skill-bar-fill" data-pct="82"></div></div>
+        </div>
+        <div class="skill-card animate-on-scroll delay-4">
+          <div class="skill-header"><span class="skill-name">Inventory &amp; Crafting</span><span class="skill-percent">80%</span></div>
+          <p class="skill-subtitle">Grid inventories, recipes, drag-and-drop</p>
+          <div class="skill-bar-bg"><div class="skill-bar-fill" data-pct="80"></div></div>
+        </div>
+        <div class="skill-card animate-on-scroll delay-5">
+          <div class="skill-header"><span class="skill-name">Matchmaking &amp; Teleportation</span><span class="skill-percent">78%</span></div>
+          <p class="skill-subtitle">TeleportService, lobby flows, reserved servers</p>
+          <div class="skill-bar-bg"><div class="skill-bar-fill" data-pct="78"></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== COMMISSIONS ===== -->
+  <div class="section-separator"></div>
+  <section id="commissions" class="section">
+    <div class="grid-bg"></div>
+    <div class="text-center">
+      <p class="section-subtitle animate-on-scroll">Work With Me</p>
+      <h2 class="section-title animate-on-scroll delay-1 inline-block">Commissions</h2>
+      <div class="orange-line orange-line-center animate-on-scroll delay-2"></div>
+    </div>
+    <div class="commission-box animate-on-scroll delay-3">
+      <div class="status-indicator">
+        <span class="status-dot"></span>
+        Currently: OPEN for commissions
+      </div>
+      <p class="commission-text">Every project is unique — pricing depends on scope and complexity.</p>
+      <p class="payment-methods">
+        <span>GBP (PayPal)</span> • <span>Robux (Gamepass)</span>
+      </p>
+      <button onclick="scrollToSection('contact')" class="btn-primary">Get In Touch →</button>
+    </div>
+  </section>
+
+  <!-- ===== CONTACT ===== -->
+  <div class="section-separator"></div>
+  <section id="contact" class="section">
+    <div class="grid-bg"></div>
+    <div class="text-center">
+      <p class="section-subtitle animate-on-scroll">Let's Talk</p>
+      <h2 class="section-title animate-on-scroll delay-1 inline-block">Contact</h2>
+      <div class="orange-line orange-line-center animate-on-scroll delay-2"></div>
+    </div>
+    <div class="contact-grid">
+      <div class="contact-card animate-on-scroll delay-3">
+        <p class="contact-label">Discord</p>
+        <p class="contact-value">exotic0range</p>
+      </div>
+      <a href="https://www.roblox.com/users/582887193/profile" target="_blank" rel="noopener noreferrer" class="contact-card animate-on-scroll delay-4">
+        <p class="contact-label">Roblox Profile</p>
+        <p class="contact-value">TheFortniteCamper</p>
+      </a>
+      <a href="https://www.youtube.com/@OrangeCamper" target="_blank" rel="noopener noreferrer" class="contact-card animate-on-scroll delay-5">
+        <p class="contact-label">YouTube</p>
+        <p class="contact-value">Orange Camper</p>
+      </a>
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer">
+    <div class="footer-links">
+      <button onclick="scrollToSection('hero')" class="footer-link">Home</button>
+      <button onclick="scrollToSection('about')" class="footer-link">About</button>
+      <button onclick="scrollToSection('projects')" class="footer-link">Projects</button>
+      <button onclick="scrollToSection('skills')" class="footer-link">Skills</button>
+      <button onclick="scrollToSection('commissions')" class="footer-link">Hire Me</button>
+      <button onclick="scrollToSection('contact')" class="footer-link">Contact</button>
+    </div>
+    <div class="footer-divider"></div>
+    <p class="footer-copy">© 2026 Orange Camper. All rights reserved.</p>
+  </footer>
+
+  <script>
+    /* ==========================================================
+       VANILLA JAVASCRIPT — Orange Camper Portfolio
+       ========================================================== */
+
+    // ===== GLOBALS =====
+    const NAV_SECTIONS = ['hero', 'about', 'projects', 'skills', 'commissions', 'contact'];
+    let mobileMenuOpen = false;
+
+    // ===== SMOOTH SCROLL TO SECTION =====
+    function scrollToSection(id) {
+      // Close mobile menu if open
+      if (mobileMenuOpen) toggleMobileMenu();
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // ===== MOBILE MENU TOGGLE =====
+    function toggleMobileMenu() {
+      mobileMenuOpen = !mobileMenuOpen;
+      const menu = document.getElementById('mobile-menu');
+      const btn = document.getElementById('mobile-menu-btn');
+      if (mobileMenuOpen) {
+        menu.classList.add('open');
+        btn.textContent = '✕';
+      } else {
+        menu.classList.remove('open');
+        btn.textContent = '☰';
+      }
+    }
+
+    // ===== TYPEWRITER EFFECT =====
+    (function typewriter() {
+      const fullText = 'Orange Camper';
+      const el = document.getElementById('typewriter-text');
+      let i = 0;
+      const interval = setInterval(function() {
+        el.textContent = fullText.slice(0, i + 1);
+        i++;
+        if (i >= fullText.length) clearInterval(interval);
+      }, 100);
+    })();
+
+    // ===== SCROLL HANDLER (progress bar, navbar, parallax, active section) =====
+    const heroContent = document.getElementById('hero-content');
+    const navbar = document.getElementById('navbar');
+    const scrollProgressBar = document.getElementById('scroll-progress');
+
+    window.addEventListener('scroll', function() {
+      const scrollTop = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+
+      // Scroll progress
+      const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+      scrollProgressBar.style.width = progress + '%';
+
+      // Navbar glassmorphism
+      if (scrollTop > 50) {
+        navbar.classList.add('scrolled');
+      } else {
+        navbar.classList.remove('scrolled');
+      }
+
+      // Parallax on hero content
+      if (heroContent) {
+        heroContent.style.transform = 'translateY(' + (scrollTop * 0.3) + 'px)';
+      }
+
+      // Determine active section
+      let current = 'hero';
+      for (let i = 0; i < NAV_SECTIONS.length; i++) {
+        const sec = document.getElementById(NAV_SECTIONS[i]);
+        if (sec && sec.offsetTop - 200 <= scrollTop) {
+          current = NAV_SECTIONS[i];
+        }
+      }
+
+      // Update active nav links
+      document.querySelectorAll('.nav-link[data-section]').forEach(function(link) {
+        if (link.getAttribute('data-section') === current) {
+          link.classList.add('active');
+        } else {
+          link.classList.remove('active');
+        }
+      });
+    }, { passive: true });
+
+    // ===== INTERSECTION OBSERVER — Scroll animations =====
+    (function initScrollAnimations() {
+      const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+      document.querySelectorAll('.animate-on-scroll').forEach(function(el) {
+        observer.observe(el);
+      });
+    })();
+
+    // ===== INTERSECTION OBSERVER — Skill bar fill animation =====
+    (function initSkillBars() {
+      const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            const bar = entry.target;
+            const pct = bar.getAttribute('data-pct');
+            if (pct) {
+              bar.style.width = pct + '%';
+            }
+          }
+        });
+      }, { threshold: 0.3 });
+
+      document.querySelectorAll('.skill-bar-fill').forEach(function(el) {
+        observer.observe(el);
+      });
+    })();
+
+    // ===== CUSTOM CURSOR GLOW =====
+    (function initCursor() {
+      if (window.innerWidth <= 768) return;
+
+      const glow = document.getElementById('cursor-glow');
+      const dot = document.getElementById('cursor-dot');
+      if (!glow || !dot) return;
+
+      let mx = 0, my = 0;
+      let gx = 0, gy = 0;
+
+      window.addEventListener('mousemove', function(e) {
+        mx = e.clientX;
+        my = e.clientY;
+        dot.style.left = mx + 'px';
+        dot.style.top = my + 'px';
+      });
+
+      (function animateCursor() {
+        gx += (mx - gx) * 0.1;
+        gy += (my - gy) * 0.1;
+        glow.style.left = gx + 'px';
+        glow.style.top = gy + 'px';
+        requestAnimationFrame(animateCursor);
+      })();
+    })();
+
+    // ===== PARTICLE SYSTEM =====
+    (function initParticles() {
+      const canvas = document.getElementById('particle-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      const PARTICLE_COUNT = 60;
+      let particles = [];
+
+      function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      function createParticle() {
+        return {
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          vx: (Math.random() - 0.5) * 0.4,
+          vy: (Math.random() - 0.5) * 0.4 - 0.15,
+          size: Math.random() * 2.5 + 0.5,
+          opacity: Math.random() * 0.4 + 0.1,
+          life: 0,
+          maxLife: Math.random() * 400 + 200
+        };
+      }
+
+      // Initialize particles with random life so they don't all appear at once
+      for (let i = 0; i < PARTICLE_COUNT; i++) {
+        var p = createParticle();
+        p.life = Math.random() * p.maxLife;
+        particles.push(p);
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        for (let i = 0; i < particles.length; i++) {
+          var p = particles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+          p.life++;
+
+          var lifeRatio = p.life / p.maxLife;
+          var alpha = lifeRatio < 0.1 ? lifeRatio * 10 : lifeRatio > 0.8 ? (1 - lifeRatio) * 5 : 1;
+          var finalOpacity = p.opacity * alpha;
+
+          // Draw particle
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(255, 106, 0, ' + finalOpacity + ')';
+          ctx.fill();
+
+          // Draw glow
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size * 3, 0, Math.PI * 2);
+          var gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 3);
+          gradient.addColorStop(0, 'rgba(255, 106, 0, ' + (finalOpacity * 0.3) + ')');
+          gradient.addColorStop(1, 'rgba(255, 106, 0, 0)');
+          ctx.fillStyle = gradient;
+          ctx.fill();
+
+          // Reset particle if expired or off-screen
+          if (p.life >= p.maxLife || p.x < -10 || p.x > canvas.width + 10 || p.y < -10 || p.y > canvas.height + 10) {
+            particles[i] = createParticle();
+          }
+        }
+
+        // Draw connecting lines between nearby particles
+        for (let i = 0; i < particles.length; i++) {
+          for (let j = i + 1; j < particles.length; j++) {
+            var dx = particles[i].x - particles[j].x;
+            var dy = particles[i].y - particles[j].y;
+            var dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 120) {
+              ctx.beginPath();
+              ctx.moveTo(particles[i].x, particles[i].y);
+              ctx.lineTo(particles[j].x, particles[j].y);
+              ctx.strokeStyle = 'rgba(255, 106, 0, ' + (0.06 * (1 - dist / 120)) + ')';
+              ctx.lineWidth = 0.5;
+              ctx.stroke();
+            }
+          }
+        }
+
+        requestAnimationFrame(animate);
+      }
+
+      animate();
+    })();
+  </script>
+</body>
+</html>
